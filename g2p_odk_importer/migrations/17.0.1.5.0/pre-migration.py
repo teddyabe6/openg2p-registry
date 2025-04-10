@@ -30,6 +30,17 @@ def migrate(cr, version):
         if res:
             cr.execute("DELETE FROM ir_model_data WHERE id=%s", (res[0],))
         if cr.fetchone()[0] > 0:
+            # Delete all the child views which has inherited this view
+            cr.execute(
+                """
+                DELETE FROM ir_ui_view
+                WHERE inherit_id = (
+                    SELECT id FROM ir_ui_view
+                    WHERE name = 'odk.res.config.settings.view.inherit.setup'
+                )
+            """
+            )
+
             cr.execute("DELETE FROM ir_ui_view WHERE name = 'odk.res.config.settings.view.inherit.setup';")
 
         _logger.info(f"Pre-migration completed successfully for {version}")
